@@ -1,0 +1,423 @@
+================================================================================
+REFERRAL SYSTEM - COMPREHENSIVE TESTING & DEBUGGING GUIDE
+================================================================================
+
+UNIT TESTING SCENARIOS
+================================================================================
+
+Test 1: Wallet Connection & Account Creation
+─────────────────────────────────────────────
+Steps:
+1. Open referral page (not logged in)
+2. Click "Connect Phantom Wallet"
+3. Approve connection in Phantom
+4. Observe connection status badge changes to "Connected"
+5. Observe referral code is generated
+6. Observe stats cards show 0 points, 0 referrals
+
+Expected Results:
+✓ Connection status shows "Connected" (green dot + text)
+✓ Referral code is generated (10 uppercase characters)
+✓ User created in database with correct wallet address
+✓ Initial points show correctly
+✓ No errors in console
+
+Debug Commands:
+fetch('/api/referral/get-or-create', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({walletAddress: 'YOUR_WALLET'})
+}).then(r => r.json()).then(console.log)
+
+─────────────────────────────────────────────
+
+Test 2: Referral Link Parameter Capture
+─────────────────────────────────────────────
+Steps:
+1. Get a valid referral code (e.g., ABC123XYZ0)
+2. Open page with: ?ref=ABC123XYZ0
+3. Open browser console
+4. Check if cookie is set: document.cookie
+5. Open referral page (or create new account)
+6. Check if referrer code was processed
+
+Expected Results:
+✓ Cookie "referrer_code" is set with value ABC123XYZ0
+✓ Referral is created in database
+✓ Referrer gets points (+100)
+✓ New user gets bonus (+25)
+
+Debug Commands:
+// Check cookie
+document.cookie.split(';').find(c => c.includes('referrer_code'))
+
+// Check referral in database
+fetch('/api/referral/stats?code=ABC123XYZ0').then(r => r.json()).then(console.log)
+
+─────────────────────────────────────────────
+
+Test 3: Manual Referral Code Entry
+─────────────────────────────────────────────
+Steps:
+1. On referral page, click "Have a referral code?"
+2. Click "Enter manually"
+3. Type a valid referral code
+4. Click "Apply Code"
+5. Check for success message
+6. Refresh stats and verify points updated
+
+Expected Results:
+✓ Input field appears
+✓ Code is auto-uppercased
+✓ Success message displays
+✓ Points awarded correctly
+✓ Error shown for invalid codes
+
+Debug Commands:
+// Manually apply referral code
+fetch('/api/referral/redeem-code', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    referralCode: 'VALIDCODE12'
+  })
+}).then(r => r.json()).then(console.log)
+
+─────────────────────────────────────────────
+
+Test 4: Real-Time Stats Updates
+─────────────────────────────────────────────
+Steps:
+1. Open referral page with connected wallet
+2. Note the "Points" and "People Referred" values
+3. Create a new account using your referral code
+4. Return to referral page
+5. Wait 15 seconds (auto-refresh)
+6. Observe stats update automatically
+
+Expected Results:
+✓ "People Referred" increases by 1
+✓ "Total Points" increases by 100
+✓ "Last updated" shows recent time
+✓ No manual refresh needed
+
+Debug Commands:
+// Check auto-refresh interval
+// Open browser DevTools
+// Network tab should show /api/referral/stats calls every 15s
+
+─────────────────────────────────────────────
+
+Test 5: Leaderboard Real-Time Updates
+─────────────────────────────────────────────
+Steps:
+1. View leaderboard
+2. Note top referrer's points
+3. Make a referral to that user
+4. Wait 30 seconds
+5. Observe leaderboard updates
+
+Expected Results:
+✓ Leaderboard refreshes every 30 seconds
+✓ Rank changes reflect new points
+✓ Top positions update correctly
+
+─────────────────────────────────────────────
+
+Test 6: Error Handling
+─────────────────────────────────────────────
+Steps:
+1. Try to apply invalid referral code
+2. Try to self-refer (use your own code)
+3. Disconnect wallet mid-operation
+4. Go offline and try to refresh
+5. Observe error messages
+
+Expected Results:
+✓ Errors display with clear messages
+✓ Auto-dismiss after 5 seconds
+✓ User can retry the action
+✓ No console exceptions
+
+─────────────────────────────────────────────
+
+Test 7: Wallet Disconnect
+─────────────────────────────────────────────
+Steps:
+1. Connect wallet
+2. Click "Disconnect"
+3. Confirm in dialog
+4. Observe connection status
+
+Expected Results:
+✓ Connection status shows "Disconnected" (red)
+✓ Stats are cleared from view
+✓ "Connect Phantom Wallet" button appears
+✓ No errors
+
+─────────────────────────────────────────────
+
+INTEGRATION TESTING
+================================================================================
+
+Test Sequence: Complete Referral Flow
+──────────────────────────────────────
+1. User A connects wallet A
+   - Verify account created
+   - Copy referral code (e.g., ABC123)
+
+2. User B visits with ?ref=ABC123
+   - Verify cookie set
+   
+3. User B connects wallet B
+   - Verify new account created
+   - Verify referral recorded
+   - Verify User A gets +100 points
+   - Verify User B gets +25 bonus
+
+4. Check leaderboard
+   - Verify User A appears
+   - Verify points displayed
+
+5. User C uses manual code entry
+   - Verify can apply without wallet first
+   - Connect wallet afterward
+   - Verify points awarded to User B
+
+Expected: All steps complete without errors
+
+─────────────────────────────────────────────
+
+PERFORMANCE TESTING
+================================================================================
+
+Load Test: 100 Concurrent Referrals
+──────────────────────────────────────
+1. Time the referral creation endpoint with load
+2. Monitor database response times
+3. Check for race conditions
+4. Verify all points awarded correctly
+
+Expected:
+- Response time <500ms per request
+- No duplicate accounts created
+- All points accounted for
+- Database maintains integrity
+
+─────────────────────────────────────────────
+
+BROWSER COMPATIBILITY TESTING
+================================================================================
+
+Browsers to Test:
+[ ] Chrome (latest)
+[ ] Firefox (latest)
+[ ] Safari (latest)
+[ ] Edge (latest)
+[ ] Mobile Chrome
+[ ] Mobile Safari
+
+Devices:
+[ ] Desktop (1920x1080)
+[ ] Laptop (1366x768)
+[ ] Tablet (768x1024)
+[ ] Mobile (375x667)
+
+Issues to Check:
+[ ] Cookies work on all browsers
+[ ] CSS displays correctly
+[ ] Phantom wallet integration
+[ ] Console has no errors
+[ ] Responsive design works
+
+─────────────────────────────────────────────
+
+DATABASE INTEGRITY CHECKS
+================================================================================
+
+Query: Referral Count Accuracy
+SELECT wallet_address, total_referrals, 
+       (SELECT COUNT(*) FROM referrals WHERE referrer_id = referral_users.id) as actual_count
+FROM referral_users
+WHERE total_referrals != (SELECT COUNT(*) FROM referrals WHERE referrer_id = referral_users.id);
+
+Expected: No rows (all counts match)
+
+─────────────────────────────────────────────
+
+Query: Duplicate Accounts
+SELECT wallet_address, COUNT(*)
+FROM referral_users
+GROUP BY wallet_address
+HAVING COUNT(*) > 1;
+
+Expected: No rows (each wallet unique)
+
+─────────────────────────────────────────────
+
+Query: Orphaned Referrals
+SELECT * FROM referrals 
+WHERE referrer_id NOT IN (SELECT id FROM referral_users);
+
+Expected: No rows (all referrals have valid referrer)
+
+─────────────────────────────────────────────
+
+Query: Total Points Accuracy
+SELECT referral_users.id, total_points,
+       COALESCE(SUM(referrals.points_earned), 0) as calculated_points
+FROM referral_users
+LEFT JOIN referrals ON referral_users.id = referrals.referrer_id
+GROUP BY referral_users.id, total_points
+HAVING total_points != COALESCE(SUM(referrals.points_earned), 0) + 25;
+
+Expected: No rows (all points match)
+
+─────────────────────────────────────────────
+
+COMMON ISSUES & SOLUTIONS
+================================================================================
+
+Issue: Points show 0 after referral
+──────────────────────────────────
+Solution 1: Wait 15 seconds (auto-refresh)
+Solution 2: Click "Refresh Stats"
+Solution 3: Check database directly:
+  SELECT * FROM referral_users WHERE referral_code = 'CODE';
+  SELECT * FROM referrals WHERE referrer_id = (SELECT id FROM ...);
+
+Issue: Referral count not incrementing
+──────────────────────────────────────
+Check 1: Verify referral record created in database
+Check 2: Verify referrer found correctly
+Check 3: Check for self-referral attempt (prevented)
+Check 4: Check wallet address matches exactly
+Solution: Manual database update if needed:
+  UPDATE referral_users SET total_referrals = X WHERE id = 'user_id';
+
+Issue: Manual code not applying
+──────────────────────────────
+Check 1: Code spelling (case-insensitive)
+Check 2: Code exists in database
+Check 3: Wallet connected
+Solution: Try again after refreshing page
+
+Issue: Connection status not updating
+─────────────────────────────────────
+Solution 1: Hard refresh (Ctrl+Shift+R)
+Solution 2: Clear cache and cookies
+Solution 3: Reconnect wallet
+Solution 4: Check wallet-context loading
+
+Issue: Referral link not working
+────────────────────────────────
+Check 1: URL format correct (?ref=CODE)
+Check 2: Code valid (10 chars, uppercase)
+Check 3: Cookies enabled
+Check 4: Not on localhost (unless testing)
+
+─────────────────────────────────────────────
+
+MONITORING & ANALYTICS
+================================================================================
+
+Key Metrics to Track:
+─────────────────────
+1. Referral Success Rate
+   = (Completed Referrals / Referral Links Clicked) * 100
+
+2. Points Distribution
+   = Total Points / Number of Referrers
+
+3. Average Referrals per User
+   = Total Referrals / Total Users
+
+4. Leaderboard Volatility
+   = Position changes per day
+
+5. Manual vs Link Entry
+   = Manual Code Entries / Total Entries
+
+6. Error Rate
+   = API Errors / Total Requests
+
+7. Response Times
+   = P50, P95, P99 response times
+
+Dashboard Queries:
+──────────────────
+-- Daily new referrals
+SELECT DATE(created_at), COUNT(*)
+FROM referrals
+GROUP BY DATE(created_at)
+ORDER BY DATE(created_at) DESC;
+
+-- Top referrers today
+SELECT referral_code, COUNT(*) as count
+FROM referrals
+WHERE DATE(created_at) = TODAY()
+GROUP BY referral_code
+ORDER BY count DESC;
+
+-- Points distributed
+SELECT SUM(total_points) FROM referral_users;
+
+─────────────────────────────────────────────
+
+STRESS TESTING
+================================================================================
+
+Test: Rapid Referral Creation
+────────────────────────────
+1. Create script to simulate 10 concurrent referrals
+2. Monitor database performance
+3. Check for race conditions
+4. Verify all points awarded
+
+Test: Large Leaderboard
+──────────────────────
+1. Create 1000 test users with points
+2. Query leaderboard performance
+3. Check pagination if implemented
+4. Monitor memory usage
+
+Test: Cookie Handling
+────────────────────
+1. Create 100 concurrent users with referral links
+2. Clear cookies periodically
+3. Verify no data loss
+4. Check cookie size
+
+─────────────────────────────────────────────
+
+FINAL VERIFICATION CHECKLIST
+================================================================================
+
+Before Production Deployment:
+
+[ ] Database migration executed successfully
+[ ] All API endpoints responding <500ms
+[ ] Real-time updates working every 15s
+[ ] Leaderboard updates every 30s
+[ ] Error handling works correctly
+[ ] Manual code entry functional
+[ ] Connection status displays correctly
+[ ] Points awarded to both referrer and new user
+[ ] No duplicate accounts created
+[ ] Self-referral prevention working
+[ ] Wallet disconnect clears stats
+[ ] Mobile responsive design verified
+[ ] No console errors in any browser
+[ ] Cookies working on all browsers
+[ ] Database queries optimized
+[ ] RLS policies preventing unauthorized access
+[ ] Email notifications working (if enabled)
+
+Go/No-Go Decision: _______________
+
+─────────────────────────────────────────────
+
+================================================================================
+Status: READY FOR TESTING
+Last Updated: 2024
+================================================================================

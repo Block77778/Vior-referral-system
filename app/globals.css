@@ -1,0 +1,189 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #00d4aa;
+  --color-primary-dark: #00a88a;
+  --color-primary-light: #00f0cc;
+  --color-accent: #d4af37;
+  --color-bg-dark: #0a1f1a;
+  --color-bg-light: #132b24;
+  --color-bg-lighter: #1a3a32;
+  --color-text: #ffffff;
+  --color-text-light: #b0d4cc;
+  --color-text-lighter: #7a9f96;
+  
+  --font-sans: 'Inter', 'Geist', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+@layer base {
+  /* Replaced @apply with direct CSS to avoid Tailwind class concatenation */
+  body {
+    background-color: #0a1f1a;
+    color: #ffffff;
+    font-family: var(--font-sans);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: bold;
+  }
+}
+
+/* Added comprehensive premium animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.4), inset 0 0 20px rgba(0, 212, 170, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 212, 170, 0.6), inset 0 0 30px rgba(0, 212, 170, 0.25);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-right {
+  animation: fade-in-right 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.4s ease-out;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-600 {
+  animation-delay: 0.6s;
+}
+
+.animation-delay-800 {
+  animation-delay: 0.8s;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+/* Added scroll-triggered animations for sections */
+@keyframes scroll-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scroll-section {
+  animation: scroll-fade-in 0.8s ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-section {
+    animation: scroll-fade-in 0.8s ease-out;
+  }
+}
+
+/* Premium styling classes */
+.gradient-overlay {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(13, 110, 97, 0.05));
+}
+
+.glow-effect {
+  box-shadow: 0 0 20px rgba(0, 212, 170, 0.4), inset 0 0 20px rgba(0, 212, 170, 0.15);
+}
+
+.glow-primary {
+  box-shadow: 0 0 30px rgba(0, 212, 170, 0.5);
+}
+
+.card-glass {
+  background: rgba(19, 43, 36, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 170, 0.1);
+}
+
+button, a {
+  transition: all 0.3s ease;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}

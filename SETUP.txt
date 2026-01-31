@@ -1,0 +1,84 @@
+================================================================================
+                              SETUP REQUIRED
+================================================================================
+
+ERROR: Table doesn't exist
+
+TO FIX: You MUST run ONE of these:
+
+OPTION A: Terminal (if you have Node.js)
+==========================================
+Run this command in your terminal:
+
+    node migrate.js
+
+Then wait for: ✅ Migration successful!
+
+
+OPTION B: Supabase Dashboard (30 seconds)
+==========================================
+1. Go to: https://supabase.com
+2. Log in and click your project
+3. Click "SQL Editor" on the left
+4. Click "+ New Query"
+5. Copy and paste this entire SQL:
+
+---BEGIN SQL---
+
+CREATE TABLE IF NOT EXISTS referral_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wallet_address TEXT UNIQUE NOT NULL,
+  referral_code TEXT UNIQUE NOT NULL,
+  total_referrals INTEGER DEFAULT 0,
+  total_points INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS referrals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  referrer_id UUID NOT NULL REFERENCES referral_users(id) ON DELETE CASCADE,
+  referred_wallet TEXT NOT NULL,
+  referred_user_id UUID REFERENCES referral_users(id) ON DELETE SET NULL,
+  points_earned INTEGER DEFAULT 10,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE OR REPLACE VIEW referral_leaderboard AS SELECT ru.id, ru.wallet_address, ru.referral_code, ru.total_referrals, ru.total_points, ru.created_at, RANK() OVER (ORDER BY ru.total_points DESC) as rank FROM referral_users ru ORDER BY ru.total_points DESC;
+
+CREATE INDEX IF NOT EXISTS idx_referral_users_wallet ON referral_users(wallet_address);
+CREATE INDEX IF NOT EXISTS idx_referral_users_code ON referral_users(referral_code);
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referred_user ON referrals(referred_user_id);
+
+ALTER TABLE referral_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read referral_users" ON referral_users FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own referral data" ON referral_users FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update their own referral data" ON referral_users FOR UPDATE USING (true);
+
+CREATE POLICY "Anyone can read referrals" ON referrals FOR SELECT USING (true);
+CREATE POLICY "Users can insert referrals" ON referrals FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update referrals" ON referrals FOR UPDATE USING (true);
+
+CREATE OR REPLACE FUNCTION increment_referrals(user_id UUID) RETURNS void AS $$ BEGIN UPDATE referral_users SET total_referrals = total_referrals + 1, updated_at = CURRENT_TIMESTAMP WHERE id = user_id; END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+---END SQL---
+
+6. Click the Play button (▶)
+7. Wait for: ✅ Query succeeded
+8. Done!
+
+
+AFTER SETUP
+===========
+1. Refresh your browser
+2. Error will be gone
+3. System works
+
+================================================================================
+This is REQUIRED. Do one of the two options above.
+================================================================================
