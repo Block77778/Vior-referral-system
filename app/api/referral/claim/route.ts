@@ -64,24 +64,11 @@ export async function POST(req: Request) {
       .eq('wallet_address', referrer.toLowerCase())
       .single()
 
-    if (referrerData) {
-      // Get current data to calculate new values
-      const { data: currentData } = await supabase
-        .from('referral_users')
-        .select('total_points, total_referrals')
-        .eq('id', referrerData.id)
-        .single()
+    await supabase.rpc('increment_referrer', {
+  uid: referrerData.id,
+  pts: 100,
+})
 
-      if (currentData) {
-        // Increment referrer's points and count
-        const { error: updateError } = await supabase
-          .from('referral_users')
-          .update({
-            total_points: (currentData.total_points || 0) + 100,
-            total_referrals: (currentData.total_referrals || 0) + 1,
-          })
-          .eq('id', referrerData.id)
-          .select()
 
         if (updateError) {
           console.error('[v0] Error updating referrer points:', updateError)
