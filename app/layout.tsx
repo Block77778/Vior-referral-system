@@ -13,7 +13,7 @@ export const metadata = {
   openGraph: {
     title: 'VIOR - Real-World Business Backed Token',
     description: 'Merging real-world business profitability with blockchain technology. Buy VIOR now on presale.',
-    images: ['vior-logo.jpg'],
+    images: ['/vior-logo.jpg'],
   },
     generator: 'v0.app'
 }
