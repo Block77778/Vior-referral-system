@@ -93,7 +93,7 @@ export async function POST(req: Request) {
     await supabase
       .from('referral_users')
       .update({
-        total_points: (referrerData?.total_points || 0) + 25,
+        total_points: (referrerData?.total_points || 0) + 100,
         total_referrals: (referrerData?.total_referrals || 0) + 1,
       })
       .eq('wallet_address', referrerWallet)
