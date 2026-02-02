@@ -2,26 +2,17 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function POST(req: Request) {
   try {
-    const { user, referrer } = await req.json()
+    const { wallet, referrer } = await req.json()
 
-    // Validate input
-    if (!user || !referrer) {
+    if (!wallet || !referrer) {
       return NextResponse.json(
-        { error: 'Missing user or referrer' },
-        { status: 400 }
-      )
-    }
-
-    // Prevent self-referral
-    if (user.toLowerCase() === referrer.toLowerCase()) {
-      return NextResponse.json(
-        { error: 'Cannot refer yourself' },
+        { ok: false, message: 'Missing wallet or referrer' },
         { status: 400 }
       )
     }
@@ -30,64 +21,28 @@ export async function POST(req: Request) {
     const { data: existing } = await supabase
       .from('referrals')
       .select('id')
-      .eq('referred_wallet', user.toLowerCase())
+      .eq('wallet', wallet)
       .single()
 
     if (existing) {
       return NextResponse.json(
-        { ok: true, message: 'Referral already recorded' },
-        { status: 200 }
+        { ok: false, message: 'Referral already claimed' },
+        { status: 409 }
       )
     }
 
     // Insert referral
-    const { error: insertError } = await supabase
-      .from('referrals')
-      .insert({
-        referrer_id: null, // Will be set by trigger or manually
-        referred_wallet: user.toLowerCase(),
-        referrer_wallet: referrer.toLowerCase(),
-      })
+    const { error } = await supabase.from('referrals').insert({
+      wallet,
+      referrer,
+    })
 
-    if (insertError) {
-      console.error('[v0] Error inserting referral:', insertError)
+    if (error) {
+      console.error(error)
       return NextResponse.json(
-        { error: 'Failed to record referral' },
+        { ok: false, message: 'Database error' },
         { status: 500 }
       )
-    }
-
-    // Find referrer's record and update points
-    const { data: referrerData } = await supabase
-      .from('referral_users')
-      .select('id')
-      .eq('wallet_address', referrer.toLowerCase())
-      .single()
-
-    await supabase.rpc('increment_referrer', {
-  uid: referrerData.id,
-  pts: 100,
-})
-
-
-        if (updateError) {
-          console.error('[v0] Error updating referrer points:', updateError)
-        }
-      }
-    }
-
-    // Create referral user record for the referred user
-    const { error: newUserError } = await supabase
-      .from('referral_users')
-      .insert({
-        wallet_address: user.toLowerCase(),
-        referral_code: `REF-${user.slice(2, 8).toUpperCase()}`,
-        total_points: 0,
-        total_referrals: 0,
-      })
-
-    if (newUserError && !newUserError.message.includes('duplicate')) {
-      console.error('[v0] Error creating user:', newUserError)
     }
 
     return NextResponse.json(
@@ -95,9 +50,9 @@ export async function POST(req: Request) {
       { status: 200 }
     )
   } catch (error) {
-    console.error('[v0] Error in referral claim:', error)
+    console.error('[Referral Claim Error]', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { ok: false, message: 'Server error' },
       { status: 500 }
     )
   }
