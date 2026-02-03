@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useWallet } from "@/components/wallet-context"
 
-export default function Header({ connectWallet, connected, publicKey }) {
+export default function Header() {
+  const { connectWallet, connected, publicKey } = useWallet()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
 
