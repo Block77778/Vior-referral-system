@@ -7,7 +7,6 @@ import { Copy, Check, Share2, Trophy, Users, Target, Zap, LogOut, AlertCircle, R
 import Header from '@/components/header'
 import Footer from '@/components/footer'
 import { useWallet } from '@/components/wallet-context'
-const { connected, connectWallet, publicKey } = useWallet()
 import { ReferralEnhancement } from '@/components/referral-enhancement'
 import { PointsRedemption } from '@/components/points-redemption'
 
