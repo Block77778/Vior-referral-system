@@ -11,7 +11,7 @@ const ecosystemItems = [
     image: "/images/whatsapp-20image-202025-11-13-20at-203.jpeg",
   },
   {
-    icon: Perfume,
+    icon: TrendingUp,
     title: "Perfume & Lifestyle",
     description: "Building luxury retail and online brands.",
     image: "/images/luxury-perfume-bottles-cosmetics-lifestyle-premium.jpg",
