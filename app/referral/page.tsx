@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Copy, Check, Share2, Trophy, Users, Target, Zap, LogOut, AlertCircle, RefreshCw } from 'lucide-react'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
+import { useWallet } from '@/components/wallet-context'
 import { ReferralEnhancement } from '@/components/referral-enhancement'
 import { PointsRedemption } from '@/components/points-redemption'
 
